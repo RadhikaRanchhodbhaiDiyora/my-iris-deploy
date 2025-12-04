@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all files
 COPY . .
 
-# Expose port (optional, Render uses $PORT)
+# Expose port (optional)
 EXPOSE 8080
 
 # Start the Flask app using Render's assigned $PORT
