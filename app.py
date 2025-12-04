@@ -1,16 +1,14 @@
-# app.py
 from flask import Flask, request, jsonify, render_template_string
 import joblib
+import os
 
 app = Flask(__name__)
 
-# Load the trained model
-MODEL_PATH = "model/iris_model.joblib"
-data = joblib.load(MODEL_PATH)
-model = data["model"]
-target_names = data["target_names"]
+# Load model
+MODEL_PATH = os.path.join("model", "iris_model.joblib")
+model = joblib.load(MODEL_PATH)
+target_names = ["setosa", "versicolor", "virginica"]
 
-# Simple web page template
 INDEX_HTML = """
 <!doctype html>
 <title>Iris Predictor</title>
@@ -25,7 +23,6 @@ INDEX_HTML = """
 <div>{{result}}</div>
 """
 
-# Web UI
 @app.route("/", methods=["GET"])
 def index():
     return render_template_string(INDEX_HTML, result="")
@@ -44,13 +41,8 @@ def predict_web():
     except Exception as e:
         return render_template_string(INDEX_HTML, result="Error: " + str(e))
 
-# API endpoint
 @app.route("/predict", methods=["POST"])
 def predict_api():
-    """
-    Expects JSON: {"features": [sl, sw, pl, pw]}
-    Returns: {"prediction": "setosa", "class_index": 0}
-    """
     payload = request.get_json(force=True)
     if not payload or "features" not in payload:
         return jsonify({"error": "Send JSON like {\"features\": [4 numbers]}"})
@@ -59,6 +51,3 @@ def predict_api():
         return jsonify({"error": "features must be length 4"}), 400
     pred = model.predict([features])[0]
     return jsonify({"prediction": target_names[pred], "class_index": int(pred)})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
